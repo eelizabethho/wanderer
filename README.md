@@ -2,7 +2,7 @@
 
 An ambient ASCII world to study to. Clawd the crab travels through six biomes (forest, rolling hills, town, lake, under the sea, a mountain dome) under a sky that follows your real clock, while the song playing in your Spotify app shows in a TV-style player.
 
-![Clawd wandering through the forest, hills and town](docs/demo.gif)
+![Clawd wandering through the forest, hills, town and lake while a Spotify song plays in the TV player](docs/demo.gif)
 
 ## Requirements
 
