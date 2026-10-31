@@ -20,7 +20,7 @@ const fmt = (ms: number) => {
 };
 
 /** Render the Spotify-TV-style player inside root; returns an update fn called on every poll. */
-export function mountPlayer(root: HTMLElement, opts: { onOpenPlaylists: () => void }): (t: Track | null) => void {
+export function mountPlayer(root: HTMLElement, opts: { onOpenSpotify: () => void }): (t: Track | null) => void {
   // Static markup only; track data goes in via textContent/attributes below.
   root.innerHTML = `
   <div class="pl pl-empty">
@@ -50,7 +50,7 @@ export function mountPlayer(root: HTMLElement, opts: { onOpenPlaylists: () => vo
             <button class="pl-toggle pl-repeat" aria-label="Repeat" aria-pressed="false">${ICONS.repeat}</button>
           </div>
           <div class="pl-right">
-            <button class="pl-lists" aria-label="Playlists">${ICONS.list}</button>
+            <button class="pl-lists" aria-label="Open Spotify to pick music" title="Open Spotify (O)">${ICONS.list}</button>
             <span class="pl-volicon" aria-hidden="true" style="display:grid;color:rgba(255,255,255,.85)">${ICONS.vol}</span>
             <input class="pl-vol" type="range" min="0" max="100" step="1" aria-label="Volume" />
           </div>
@@ -71,7 +71,7 @@ export function mountPlayer(root: HTMLElement, opts: { onOpenPlaylists: () => vo
   const click = (sel: string, c: Control) => $(sel).addEventListener('click', () => void control(c));
   click('.pl-shuffle', 'shuffle'); click('.pl-prev', 'previous'); click('.pl-play', 'playpause');
   click('.pl-next', 'next'); click('.pl-repeat', 'repeat');
-  $('.pl-lists').addEventListener('click', opts.onOpenPlaylists);
+  $('.pl-lists').addEventListener('click', opts.onOpenSpotify);
 
   // Progress: local clock anchored at the last poll/seek.
   let posMs = 0, anchor = performance.now(), duration = 0, playing = false, holdUntil = 0;

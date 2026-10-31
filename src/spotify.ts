@@ -1,4 +1,4 @@
-import type { Control, Playlist, Track } from './types';
+import type { Control, Track } from './types';
 
 async function fetchTrack(): Promise<Track | null> {
   try {
@@ -47,13 +47,3 @@ async function post(path: string): Promise<void> {
 
 export const setVolume = (volume: number) => post(`/api/volume/${Math.round(Math.min(100, Math.max(0, volume)))}`);
 export const seek = (ms: number) => post(`/api/seek/${(Math.max(0, ms) / 1000).toFixed(3)}`);
-export const playUri = (uri: string) => post(`/api/play/${encodeURIComponent(uri)}`);
-
-export async function fetchPlaylists(): Promise<Playlist[]> {
-  try {
-    const r = await fetch('/api/playlists');
-    return r.ok ? ((await r.json()) as Playlist[]) : [];
-  } catch {
-    return [];
-  }
-}

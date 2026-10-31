@@ -72,13 +72,6 @@ export interface Track {
   volume: number;
 }
 
-/** shuffle / repeat toggle the current setting. */
-export type Control = 'playpause' | 'next' | 'previous' | 'shuffle' | 'repeat';
+/** shuffle / repeat toggle the current setting; open brings the Spotify app to the front. */
+export type Control = 'playpause' | 'next' | 'previous' | 'shuffle' | 'repeat' | 'open';
 
-/** An entry from playlists.json, with name and cover filled in from Spotify's public oEmbed. */
-export interface Playlist {
-  /** spotify:playlist:<22-char id> (albums allowed too: spotify:album:<id>) */
-  uri: string;
-  name: string;
-  imageUrl: string;
-}

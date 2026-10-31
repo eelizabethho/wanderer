@@ -3,7 +3,6 @@ import { FRAMES, SPRITE_H, drawSprite } from './sprite';
 import { MODES } from './modes';
 import { watchTrack, control } from './spotify';
 import { mountPlayer } from './player';
-import { mountPlaylists } from './playlists';
 import type { Grid, Mode, Palette } from './types';
 
 const MODE_SECONDS = 240;
@@ -92,7 +91,7 @@ addEventListener('resize', () => {
 });
 
 addEventListener('keydown', (e) => {
-  // Focused buttons/sliders own Space and arrows; other shortcuts (M, F, P, Escape) still apply.
+  // Focused buttons/sliders own Space and arrows; other shortcuts (M, F, O) still apply.
   if ([' ', 'ArrowLeft', 'ArrowRight'].includes(e.key) && (e.target as Element).closest?.('input, button')) return;
   if (e.key === 'm' || e.key === 'M') nextMode(performance.now() / 1000);
   else if (e.key === 'f' || e.key === 'F') {
@@ -101,8 +100,7 @@ addEventListener('keydown', (e) => {
   } else if (e.key === ' ') control('playpause');
   else if (e.key === 'ArrowRight') control('next');
   else if (e.key === 'ArrowLeft') control('previous');
-  else if (e.key === 'p' || e.key === 'P') drawer.toggle();
-  else if (e.key === 'Escape') drawer.close();
+  else if (e.key === 'o' || e.key === 'O') control('open');
   else return;
   e.preventDefault();
 });
@@ -114,8 +112,7 @@ addEventListener('mousemove', () => {
   idleTimer = window.setTimeout(() => document.body.classList.add('idle'), 5000);
 });
 
-const drawer = mountPlaylists(document.getElementById('playlists')!);
-const showTrack = mountPlayer(document.getElementById('player')!, { onOpenPlaylists: () => drawer.toggle() });
+const showTrack = mountPlayer(document.getElementById('player')!, { onOpenSpotify: () => control('open') });
 let lastSong = '';
 watchTrack((track) => {
   showTrack(track);
