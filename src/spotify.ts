@@ -35,3 +35,15 @@ export async function control(c: Control): Promise<void> {
   }
   repoll();
 }
+
+async function post(path: string): Promise<void> {
+  try {
+    await fetch(path, { method: 'POST' });
+  } catch {
+    /* bridge down: ignore */
+  }
+  repoll();
+}
+
+export const setVolume = (volume: number) => post(`/api/volume/${Math.round(Math.min(100, Math.max(0, volume)))}`);
+export const seek = (ms: number) => post(`/api/seek/${(Math.max(0, ms) / 1000).toFixed(3)}`);

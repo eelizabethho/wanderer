@@ -1,0 +1,82 @@
+.pl {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  color: #fff;
+  opacity: 1;
+  transition: opacity 600ms ease, visibility 0s;
+}
+/* Nothing playing: hide everything except the Open Spotify button, so there's always a way to pick music. */
+.pl-grad, .pl-info, .pl-prog, .pl-pill, .pl-volicon, .pl-vol { transition: opacity 600ms ease, visibility 0s; }
+.pl.pl-empty :is(.pl-grad, .pl-info, .pl-prog, .pl-pill, .pl-volicon, .pl-vol) { opacity: 0; visibility: hidden; transition: opacity 600ms ease, visibility 0s 600ms; }
+.pl.pl-empty .pl-lists { display: flex; gap: 8px; width: auto; padding: 0 16px 0 12px; border-radius: 999px; background: rgba(20,20,20,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.pl.pl-empty .pl-lists::after { content: "Open Spotify"; font: 500 13px/1 "Inter", system-ui, sans-serif; }
+.pl button, .pl input, .pl .pl-bar { pointer-events: auto; }
+
+.pl-grad {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 45%;
+  background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.65));
+  transition: opacity 800ms ease;
+}
+/* Stays (softer) when idle: the white title must stay readable over cream day scenes. */
+body.idle .pl-grad { opacity: 0.6; }
+.pl-fade { transition: opacity 800ms ease; }
+body.idle .pl-fade { opacity: 0; pointer-events: none; }
+body.idle .pl-fade * { pointer-events: none; }
+
+.pl-wrap {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 0 48px 36px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.pl-info { display: flex; align-items: flex-end; gap: 24px; min-width: 0; transition: opacity 800ms ease; }
+body.idle .pl-info { opacity: 0.75; }
+.pl-cover {
+  flex: none; width: 176px; height: 176px; border-radius: 6px; object-fit: cover;
+  background: rgba(255,255,255,0.08); box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+}
+.pl-text { min-width: 0; display: flex; flex-direction: column; gap: 4px; padding-bottom: 2px; }
+.pl-over { font-size: 11px; letter-spacing: 0.14em; opacity: 0.6; font-weight: 500; }
+.pl-title { font-size: 40px; line-height: 1.15; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 12px rgba(0,0,0,0.35); }
+.pl-artist { font-size: 18px; color: rgba(255,255,255,0.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.pl-prog { display: flex; align-items: center; gap: 12px; font-size: 12px; font-variant-numeric: tabular-nums; color: rgba(255,255,255,0.8); }
+.pl-time { min-width: 4ch; }
+.pl-time:last-child { text-align: right; }
+.pl-bar { position: relative; flex: 1; height: 19px; cursor: pointer; touch-action: none; }
+.pl-bar::before { content: ""; position: absolute; left: 0; right: 0; top: 8px; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.25); }
+.pl-fill { position: absolute; left: 0; top: 8px; height: 3px; width: 100%; border-radius: 2px; background: #fff; transform-origin: left; transform: scaleX(0); }
+.pl-knob { position: absolute; top: 4px; left: 0; width: 11px; height: 11px; margin-left: -5px; border-radius: 50%; background: #fff; opacity: 0; transition: opacity 120ms; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+.pl-bar:hover .pl-knob, .pl-bar.drag .pl-knob { opacity: 1; }
+
+.pl-row { margin-top: 4px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.pl-pill { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 999px; background: rgba(20,20,20,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.pl-right { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+
+.pl button {
+  position: relative; display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%;
+  background: transparent; color: rgba(255,255,255,0.85); cursor: pointer; transition: color 150ms, transform 150ms, background 150ms;
+}
+.pl button:hover { color: #fff; }
+.pl button:active { transform: scale(0.94); }
+.pl button:focus-visible, .pl input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.pl button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.pl .pl-solid { fill: currentColor; }
+.pl .pl-toggle { color: rgba(255,255,255,0.45); }
+.pl .pl-toggle.on { color: #fff; }
+.pl .pl-toggle.on::after { content: ""; position: absolute; bottom: 2px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: #fff; }
+.pl .pl-play { width: 56px; height: 56px; background: #fff; color: #111; }
+.pl .pl-play:hover { color: #000; transform: scale(1.06); }
+.pl .pl-play:active { transform: scale(0.96); }
+.pl .pl-play svg { width: 26px; height: 26px; }
+
+.pl-vol { width: 100px; height: 19px; margin: 0; accent-color: #fff; cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pl, .pl-fade, .pl-info, .pl button, .pl-knob { transition: none !important; }
+}
+
+/* Keeps white text legible over the light day palettes. */
+.pl-title, .pl-artist, .pl-over { text-shadow: 0 1px 12px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35); }
