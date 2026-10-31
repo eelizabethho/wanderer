@@ -92,7 +92,8 @@ addEventListener('resize', () => {
 });
 
 addEventListener('keydown', (e) => {
-  if ((e.target as Element).closest?.('input, button')) return; // let focused controls handle their own keys
+  // Focused buttons/sliders own Space and arrows; other shortcuts (M, F, P, Escape) still apply.
+  if ([' ', 'ArrowLeft', 'ArrowRight'].includes(e.key) && (e.target as Element).closest?.('input, button')) return;
   if (e.key === 'm' || e.key === 'M') nextMode(performance.now() / 1000);
   else if (e.key === 'f' || e.key === 'F') {
     if (document.fullscreenElement) document.exitFullscreen();

@@ -1,4 +1,4 @@
-import type { Control, Track } from './types';
+import type { Control, Playlist, Track } from './types';
 
 async function fetchTrack(): Promise<Track | null> {
   try {
@@ -36,11 +36,24 @@ export async function control(c: Control): Promise<void> {
   repoll();
 }
 
-// STUB (Bridge agent implements): each POSTs to the bridge, ignores errors, then repolls.
-export async function setVolume(_volume: number): Promise<void> {}
-export async function seek(_ms: number): Promise<void> {}
-export async function playUri(_uri: string): Promise<void> {}
-// STUB (Bridge agent implements): GET /api/playlists, [] on any error.
-export async function fetchPlaylists(): Promise<import('./types').Playlist[]> {
-  return [];
+async function post(path: string): Promise<void> {
+  try {
+    await fetch(path, { method: 'POST' });
+  } catch {
+    /* bridge down: ignore */
+  }
+  repoll();
+}
+
+export const setVolume = (volume: number) => post(`/api/volume/${Math.round(Math.min(100, Math.max(0, volume)))}`);
+export const seek = (ms: number) => post(`/api/seek/${(Math.max(0, ms) / 1000).toFixed(3)}`);
+export const playUri = (uri: string) => post(`/api/play/${encodeURIComponent(uri)}`);
+
+export async function fetchPlaylists(): Promise<Playlist[]> {
+  try {
+    const r = await fetch('/api/playlists');
+    return r.ok ? ((await r.json()) as Playlist[]) : [];
+  } catch {
+    return [];
+  }
 }
