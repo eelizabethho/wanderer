@@ -1,6 +1,6 @@
 # Wanderer
 
-An ambient ASCII world to study to. Wick, a little paper-lantern spirit, travels through six biomes (forest, rolling hills, town, lake, under the sea, a mountain dome) under a sky that follows your real clock, while your Spotify song plays in a TV-style player.
+An ambient ASCII world to study to. Clawd travels through six biomes (forest, rolling hills, town, lake, under the sea, a mountain dome) under a sky that follows your real clock, while your Spotify song plays in a TV-style player.
 
 ```bash
 npm install
@@ -19,7 +19,7 @@ Open http://127.0.0.1:5173 and press `F` for full screen. The first time it runs
 
 Biomes change every 6 minutes. Open `http://127.0.0.1:5173/?switch=song` to change them on every new song instead. Add `?hour=22` to preview a time of day.
 
-The scene engine in `public/design/` comes from the Wanderer v2 Claude Design project; the only change is a `pipX` option for Wick's position.
+The scene engine in `public/design/` comes from the Wanderer v2 Claude Design project; the only changes are a `pipX` option for the character's position and `clawd.js`, which swaps the design's Wick for Clawd (sprite from github.com/marciogranzotto/clawd-tank, MIT).
 
 Spotify is read from the desktop app through AppleScript (`bridge/server.mjs`), so it needs no login and works on Free. It only sees music playing on this Mac.
 
