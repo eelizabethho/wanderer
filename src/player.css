@@ -8,7 +8,11 @@
   opacity: 1;
   transition: opacity 600ms ease, visibility 0s;
 }
-.pl.pl-empty { opacity: 0; visibility: hidden; transition: opacity 600ms ease, visibility 0s 600ms; }
+/* Nothing playing: hide everything except the Open Spotify button, so there's always a way to pick music. */
+.pl-grad, .pl-info, .pl-prog, .pl-pill, .pl-volicon, .pl-vol { transition: opacity 600ms ease, visibility 0s; }
+.pl.pl-empty :is(.pl-grad, .pl-info, .pl-prog, .pl-pill, .pl-volicon, .pl-vol) { opacity: 0; visibility: hidden; transition: opacity 600ms ease, visibility 0s 600ms; }
+.pl.pl-empty .pl-lists { display: flex; gap: 8px; width: auto; padding: 0 16px 0 12px; border-radius: 999px; background: rgba(20,20,20,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.pl.pl-empty .pl-lists::after { content: "Open Spotify"; font: 500 13px/1 "Inter", system-ui, sans-serif; }
 .pl button, .pl input, .pl .pl-bar { pointer-events: auto; }
 
 .pl-grad {
