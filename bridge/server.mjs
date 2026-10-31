@@ -16,22 +16,16 @@ const NOW_PLAYING = guard(`tell application "Spotify"
 if player state is stopped then return ""
 set sep to ASCII character 31
 set t to current track
-return (name of t) & sep & (artist of t) & sep & (album of t) & sep & (artwork url of t) & sep & (player position as string) & sep & (duration of t as string) & sep & (player state as string) & sep & (shuffling as string) & sep & (repeating as string) & sep & (sound volume as string)
+return (name of t) & sep & (artist of t) & sep & (album of t) & sep & (artwork url of t) & sep & (player position as string) & sep & (duration of t as string) & sep & (player state as string)
 end tell`);
 
 const CONTROLS = {
   playpause: guard('tell application "Spotify" to playpause'),
   next: guard('tell application "Spotify" to next track'),
   previous: guard('tell application "Spotify" to previous track'),
-  shuffle: guard('tell application "Spotify" to set shuffling to not shuffling'),
-  repeat: guard('tell application "Spotify" to set repeating to not repeating'),
   // Deliberately unguarded: opening Spotify is the point, launching it if closed.
   open: 'tell application "Spotify" to activate',
 };
-
-// The ONLY values ever interpolated into a script, each validated by an exact regex first.
-const scriptVolume = (n) => guard(`tell application "Spotify" to set sound volume to ${n}`);
-const scriptSeek = (n) => guard(`tell application "Spotify" to set player position to ${n}`);
 
 function osa(script) {
   return new Promise((resolve, reject) => {
@@ -47,16 +41,13 @@ const num = (s) => Number(s.replace(',', '.'));
 async function nowPlaying() {
   const out = await osa(NOW_PLAYING);
   if (!out) return null;
-  const [title, artist, album, artUrl, pos, dur, state, shuf, rep, vol] = out.split(SEP);
+  const [title, artist, album, artUrl, pos, dur, state] = out.split(SEP);
   if (state === undefined) return null;
   return {
     title, artist, album, artUrl,
     progressMs: Math.round(num(pos) * 1000),
     durationMs: Math.round(num(dur)),
     isPlaying: state === 'playing',
-    shuffling: shuf === 'true',
-    repeating: rep === 'true',
-    volume: Math.round(num(vol)),
   };
 }
 
@@ -78,17 +69,6 @@ const server = http.createServer(async (req, res) => {
     const m = req.method === 'POST' && /^\/api\/control\/(\w+)$/.exec(req.url ?? '');
     if (m && Object.hasOwn(CONTROLS, m[1])) {
       await osa(CONTROLS[m[1]]);
-      return send(204);
-    }
-    const v = req.method === 'POST' && /^\/api\/(volume|seek)\/([^/]*)$/.exec(req.url ?? '');
-    if (v) {
-      let arg;
-      try { arg = decodeURIComponent(v[2]); } catch { return send(400); }
-      let script = null;
-      if (v[1] === 'volume' && /^\d{1,3}$/.test(arg) && Number(arg) <= 100) script = scriptVolume(Number(arg));
-      else if (v[1] === 'seek' && /^\d{1,9}(\.\d{1,3})?$/.test(arg)) script = scriptSeek(Number(arg));
-      if (!script) return send(400);
-      await osa(script);
       return send(204);
     }
     send(404);

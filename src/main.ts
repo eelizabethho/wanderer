@@ -2,7 +2,7 @@ import { createRenderer } from './ascii';
 import { FRAMES, SPRITE_H, drawSprite } from './sprite';
 import { MODES } from './modes';
 import { watchTrack, control } from './spotify';
-import { mountPlayer } from './player';
+import { mountNowPlaying } from './nowPlaying';
 import type { Grid, Mode, Palette } from './types';
 
 const MODE_SECONDS = 240;
@@ -112,7 +112,7 @@ addEventListener('mousemove', () => {
   idleTimer = window.setTimeout(() => document.body.classList.add('idle'), 5000);
 });
 
-const showTrack = mountPlayer(document.getElementById('player')!, { onOpenSpotify: () => control('open') });
+const showTrack = mountNowPlaying(document.getElementById('now-playing')!, () => control('open'));
 let lastSong = '';
 watchTrack((track) => {
   showTrack(track);
