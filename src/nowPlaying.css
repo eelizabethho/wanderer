@@ -1,0 +1,21 @@
+.np-card {
+  position: fixed; top: 16px; right: 16px; z-index: 10;
+  width: max-content; max-width: 360px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px 12px;
+  background: rgba(20, 20, 20, 0.75); border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow: hidden; pointer-events: none;
+  opacity: 0; transition: opacity 600ms ease;
+}
+.np-card.np-on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .np-card { transition: none; } }
+.np-note { color: #e8845a; font-size: 16px; }
+.np-art { width: 40px; height: 40px; border-radius: 3px; object-fit: cover; background: rgba(255, 255, 255, 0.08); flex: none; }
+.np-art[hidden] { display: none; }
+.np-text { min-width: 0; display: flex; flex-direction: column; }
+.np-title, .np-artist { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-title { color: #ece8e0; }
+.np-artist { color: #9a968f; }
+.np-bar { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: rgba(255, 255, 255, 0.08); }
+.np-fill { height: 100%; width: 0; background: #b8703f; transition: width 1s linear; }

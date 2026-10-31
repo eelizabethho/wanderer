@@ -1,4 +1,7 @@
 import type { Mode } from '../types';
+import { forest } from './forest';
+import { hills } from './hills';
+import { lake } from './lake';
+import { night } from './night';
 
-// STUB: Modes agent replaces this file. Order: forest, lake, hills, night.
-export const MODES: Mode[] = [];
+export const MODES: Mode[] = [forest, lake, hills, night];
