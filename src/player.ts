@@ -10,7 +10,7 @@ const ICONS = {
   play: I('<path class="pl-solid" d="M7 4.5v15l12.5-7.5z"/>'),
   pause: I('<path class="pl-solid" d="M6 4.5h4v15H6zM14 4.5h4v15h-4z"/>'),
   repeat: I('<path d="M4 11V9.5A2.5 2.5 0 0 1 6.5 7H20M20 13v1.5a2.5 2.5 0 0 1-2.5 2.5H4"/><path d="M17 4l3 3-3 3M7 14l-3 3 3 3"/>'),
-  list: I('<path d="M4 6h12M4 11h12M4 16h7"/><path d="M19 14v5M16.5 16.5h5" transform="translate(-1 0)"/>'),
+  open: I('<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>'),
   vol: I('<path class="pl-solid" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>'),
 };
 
@@ -50,7 +50,7 @@ export function mountPlayer(root: HTMLElement, opts: { onOpenSpotify: () => void
             <button class="pl-toggle pl-repeat" aria-label="Repeat" aria-pressed="false">${ICONS.repeat}</button>
           </div>
           <div class="pl-right">
-            <button class="pl-lists" aria-label="Open Spotify to pick music" title="Open Spotify (O)">${ICONS.list}</button>
+            <button class="pl-lists" aria-label="Open Spotify to pick music" title="Open Spotify (O)">${ICONS.open}</button>
             <span class="pl-volicon" aria-hidden="true" style="display:grid;color:rgba(255,255,255,.85)">${ICONS.vol}</span>
             <input class="pl-vol" type="range" min="0" max="100" step="1" aria-label="Volume" />
           </div>
