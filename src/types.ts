@@ -66,6 +66,19 @@ export interface Track {
   progressMs: number;
   durationMs: number;
   isPlaying: boolean;
+  shuffling: boolean;
+  repeating: boolean;
+  /** 0..100 */
+  volume: number;
 }
 
-export type Control = 'playpause' | 'next' | 'previous';
+/** shuffle / repeat toggle the current setting. */
+export type Control = 'playpause' | 'next' | 'previous' | 'shuffle' | 'repeat';
+
+/** An entry from playlists.json, with name and cover filled in from Spotify's public oEmbed. */
+export interface Playlist {
+  /** spotify:playlist:<22-char id> (albums allowed too: spotify:album:<id>) */
+  uri: string;
+  name: string;
+  imageUrl: string;
+}

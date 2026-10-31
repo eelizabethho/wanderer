@@ -35,3 +35,12 @@ export async function control(c: Control): Promise<void> {
   }
   repoll();
 }
+
+// STUB (Bridge agent implements): each POSTs to the bridge, ignores errors, then repolls.
+export async function setVolume(_volume: number): Promise<void> {}
+export async function seek(_ms: number): Promise<void> {}
+export async function playUri(_uri: string): Promise<void> {}
+// STUB (Bridge agent implements): GET /api/playlists, [] on any error.
+export async function fetchPlaylists(): Promise<import('./types').Playlist[]> {
+  return [];
+}

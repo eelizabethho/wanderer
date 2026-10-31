@@ -2,7 +2,8 @@ import { createRenderer } from './ascii';
 import { FRAMES, SPRITE_H, drawSprite } from './sprite';
 import { MODES } from './modes';
 import { watchTrack, control } from './spotify';
-import { mountNowPlaying } from './nowPlaying';
+import { mountPlayer } from './player';
+import { mountPlaylists } from './playlists';
 import type { Grid, Mode, Palette } from './types';
 
 const MODE_SECONDS = 240;
@@ -91,6 +92,7 @@ addEventListener('resize', () => {
 });
 
 addEventListener('keydown', (e) => {
+  if ((e.target as Element).closest?.('input, button')) return; // let focused controls handle their own keys
   if (e.key === 'm' || e.key === 'M') nextMode(performance.now() / 1000);
   else if (e.key === 'f' || e.key === 'F') {
     if (document.fullscreenElement) document.exitFullscreen();
@@ -98,6 +100,8 @@ addEventListener('keydown', (e) => {
   } else if (e.key === ' ') control('playpause');
   else if (e.key === 'ArrowRight') control('next');
   else if (e.key === 'ArrowLeft') control('previous');
+  else if (e.key === 'p' || e.key === 'P') drawer.toggle();
+  else if (e.key === 'Escape') drawer.close();
   else return;
   e.preventDefault();
 });
@@ -106,10 +110,11 @@ let idleTimer = 0;
 addEventListener('mousemove', () => {
   document.body.classList.remove('idle');
   clearTimeout(idleTimer);
-  idleTimer = window.setTimeout(() => document.body.classList.add('idle'), 3000);
+  idleTimer = window.setTimeout(() => document.body.classList.add('idle'), 5000);
 });
 
-const showTrack = mountNowPlaying(document.getElementById('now-playing')!);
+const drawer = mountPlaylists(document.getElementById('playlists')!);
+const showTrack = mountPlayer(document.getElementById('player')!, { onOpenPlaylists: () => drawer.toggle() });
 let lastSong = '';
 watchTrack((track) => {
   showTrack(track);
