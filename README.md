@@ -1,6 +1,6 @@
 # Wanderer
 
-An ambient ASCII landscape to study to. A little creature walks through forests, paddles across lakes, bikes over hills and wanders under the stars, while the song playing in your Spotify Mac app shows in the corner.
+An ambient ASCII world to study to. Wick, a little paper-lantern spirit, travels through six biomes (forest, rolling hills, town, lake, under the sea, a mountain dome) under a sky that follows your real clock, while your Spotify song plays in a TV-style player.
 
 ```bash
 npm install
@@ -11,13 +11,15 @@ Open http://127.0.0.1:5173 and press `F` for full screen. The first time it runs
 
 | Key | Does |
 |---|---|
-| `M` | next landscape |
+| `M` | next biome |
 | `F` | full screen |
 | `Space` | play / pause |
 | `←` `→` | previous / next song |
 | `O` | open the Spotify app to pick music |
 
-Landscapes change every 4 minutes. Open `http://127.0.0.1:5173/?switch=song` to change them on every new song instead. Day or night colors follow your clock.
+Biomes change every 6 minutes. Open `http://127.0.0.1:5173/?switch=song` to change them on every new song instead. Add `?hour=22` to preview a time of day.
+
+The scene engine in `public/design/` comes from the Wanderer v2 Claude Design project; the only change is a `pipX` option for Wick's position.
 
 Spotify is read from the desktop app through AppleScript (`bridge/server.mjs`), so it needs no login and works on Free. It only sees music playing on this Mac.
 

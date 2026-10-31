@@ -31,7 +31,7 @@ body.idle .pl-fade * { pointer-events: none; }
   padding: 0 48px 36px;
   display: flex; flex-direction: column; gap: 16px;
 }
-.pl-info { display: flex; align-items: flex-end; gap: 24px; min-width: 0; transition: opacity 800ms ease; }
+.pl-info { display: flex; align-items: flex-end; gap: 24px; min-width: 0; max-width: 54vw; transition: opacity 800ms ease; }
 body.idle .pl-info { opacity: 0.75; }
 .pl-cover {
   flex: none; width: 176px; height: 176px; border-radius: 6px; object-fit: cover;

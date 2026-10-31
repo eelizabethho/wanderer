@@ -4,15 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Wanderer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <style>
-      html, body { margin: 0; height: 100%; background: #1c1c1c; overflow: hidden; }
-      canvas { display: block; width: 100vw; height: 100vh; }
+      html, body { margin: 0; height: 100%; background: #131719; overflow: hidden; }
+      canvas { display: block; width: 100vw; height: 100vh; object-fit: cover; }
       body.idle { cursor: none; }
     </style>
   </head>
   <body>
     <canvas id="scene"></canvas>
     <div id="player"></div>
+    <!-- Wanderer v2 scene engine, from the Claude Design project (unmodified apart from dropping spec-page helpers) -->
+    <script src="/design/wanderer-core.js"></script>
+    <script src="/design/wanderer-biomes.js"></script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
