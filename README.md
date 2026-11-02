@@ -2,7 +2,7 @@
 
 An ambient ASCII world to study to. Clawd the crab travels through nine biomes (forest, rolling hills, town, lake, under the sea, a mountain dome, a snowy tundra, a desert, a canyon river) under a sky that follows your real clock, while the song playing in your Spotify app shows in a TV-style player. Study mode adds a timer while Clawd fishes for a journal of 19 fish.
 
-![Clawd wandering through the forest, hills, town and lake while a Spotify song plays in the TV player](docs/demo.gif)
+![Clawd wandering the forest with a Spotify song in the TV player, then fishing at the lake in study mode and landing a fish as a catch toast pops up](docs/demo.gif)
 
 ## Requirements
 
@@ -49,6 +49,8 @@ Add these to the URL:
 ## Study mode
 
 Clawd fishes in the lake and the canyon river while a count-up timer runs. He casts and catches on his own. The scene swaps between the two spots every 20 minutes.
+
+[Watch study mode in action](docs/study-mode.mp4)
 
 - **Start**: press `S` or click **Study**.
 - **Pause**: press `P` or click Pause. The line reels in and no fish bite.
