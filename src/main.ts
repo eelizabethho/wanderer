@@ -166,6 +166,7 @@ function start() {
 function stop() {
   if (!session) return;
   const now = Date.now(), done = pause(session, now, speed);
+  journal = loadJournal(store);
   journal = { ...journal, sessions: journal.sessions + 1 };
   saveJournal(store, journal);
   saveSession(store, null);
@@ -187,6 +188,8 @@ function studyTick() {
 }
 
 function land(fish: Fish[]) {
+  // reread so a catch saved by another tab is never overwritten
+  journal = loadJournal(store);
   // new means never caught before so a second one in the same batch is not
   for (const f of fish) {
     unseen.push([f, !journal.caught[f.id]]);
@@ -266,6 +269,17 @@ document.addEventListener('visibilitychange', () => {
   toast();
 });
 addEventListener('pagehide', save);
+// another tab changed study storage so take its journal and session instead of writing over them
+addEventListener('storage', (e) => {
+  if (e.key && !e.key.startsWith('wanderer.')) return;
+  journal = loadJournal(store);
+  const was = session;
+  session = loadSession(store);
+  if (was && !session) {
+    reel = nextReel = null;
+    setAct('boat');
+  } else if (!was && session) enterStudy();
+});
 
 // The engine measures the monospace cell width once, so the font must be loaded first.
 document.fonts.load(WE.FONT).catch(() => {}).finally(() => {
