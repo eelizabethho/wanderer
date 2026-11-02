@@ -1,0 +1,212 @@
+/* study mode pills timer card catch toast journal and summary */
+.st-pills, .st-card, .st-toasts, .st-dlg {
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --glass: rgba(20, 20, 20, 0.55);
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  color: #fff;
+}
+.st-pills[hidden], .st-card[hidden], .st-dlg [hidden] { display: none; }
+.st-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+:where(.st-pills, .st-card, .st-dlg) button {
+  font: inherit; color: inherit; border: 0; padding: 0; background: none; cursor: pointer;
+  transition: transform 160ms var(--ease), background-color 150ms ease, color 150ms ease;
+}
+:where(.st-pills, .st-card, .st-dlg) button:active { transform: scale(0.97); }
+:is(.st-pills, .st-card, .st-dlg) :focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+/* dark halo keeps the white ring visible over the cream day sky */
+:is(.st-pills, .st-card) :focus-visible { box-shadow: 0 0 0 6px rgba(10, 10, 12, 0.55); }
+.st-dlg svg, .st-pills svg { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.st-solid { fill: currentColor; stroke: none; }
+
+/* shown when not studying and styled like the open spotify pill */
+.st-pills { position: fixed; top: 36px; left: 48px; z-index: 11; display: flex; gap: 8px; transition: opacity 800ms ease; }
+body.idle .st-pills:not(:has(:focus-visible)) { opacity: 0; pointer-events: none; }
+.st-pill {
+  display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px 0 12px; border-radius: 999px;
+  background: var(--glass); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.85); font-size: 13px; font-weight: 500; line-height: 1;
+}
+.st-pill:hover { color: #fff; }
+
+/* timer card */
+.st-card {
+  position: fixed; top: 36px; left: 48px; z-index: 11; width: 236px; padding: 16px 18px;
+  border-radius: 18px; background: rgba(20, 20, 20, 0.68); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.18); transition: opacity 800ms ease;
+}
+body.idle .st-card:not(:has(:focus-visible)) { opacity: 0.82; }
+.st-over { font-size: 11px; font-weight: 500; letter-spacing: 0.14em; color: rgba(255, 255, 255, 0.6); }
+.st-clock { margin: 6px 0 14px; font: 500 40px/1 var(--mono); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; transition: opacity 300ms ease; }
+.st-card.paused .st-clock { opacity: 0.5; }
+/* ticking seconds stay readable on idle but stop pulling the eye */
+body.idle .st-card:not(.paused, :has(:focus-visible)) .st-clock { opacity: 0.7; transition-duration: 800ms; }
+.st-luck { display: flex; align-items: center; gap: 10px; }
+.st-cap { font-size: 10px; font-weight: 500; letter-spacing: 0.14em; color: rgba(255, 255, 255, 0.55); }
+.st-bar { position: relative; flex: 1; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.16); overflow: hidden; }
+.st-fill { position: absolute; inset: 0; background: var(--c); transform-origin: left; transform: scaleX(0); transition: background-color 600ms ease; }
+/* four segments, one per tier the luck can boost */
+.st-bar::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(25% - 2px), rgba(20, 20, 20, 0.85) calc(25% - 2px) 25%); }
+.st-luck-tier { width: 62px; text-align: right; font-size: 12px; font-weight: 600; color: color-mix(in srgb, var(--c) 72%, #fff); transition: color 600ms ease; }
+.st-count { display: flex; justify-content: space-between; margin-top: 12px; font-size: 13px; color: rgba(255, 255, 255, 0.7); }
+.st-count b { font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
+.st-glyph { margin-right: 6px; font: 500 12px var(--mono); white-space: pre; color: #7FA8C9; }
+/* buttons fold away on idle so the card gets small and calm */
+.st-actions { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 600ms ease, opacity 600ms ease; }
+.st-actions > div { display: flex; gap: 6px; min-height: 0; overflow: hidden; padding: 14px 4px 4px; margin: 0 -4px -4px; }
+body.idle .st-card:not(:has(:focus-visible)) .st-actions { grid-template-rows: 0fr; opacity: 0; pointer-events: none; }
+.st-btn {
+  height: 30px; padding: 0 12px; border-radius: 999px; white-space: nowrap;
+  background: rgba(255, 255, 255, 0.1); font-size: 12.5px; font-weight: 500;
+}
+.st-btn:hover { background: rgba(255, 255, 255, 0.18); }
+.st-fishbtn { margin-left: auto; }
+.st-btn.armed, .st-btn.armed:hover { background: rgba(224, 122, 95, 0.55); }
+.st-btn.st-primary { background: #fff; color: #141414; }
+.st-btn.st-primary:hover { background: #f1efe9; }
+
+/* fish bits shared by toast, journal and summary */
+.st-art { display: block; flex: none; margin: 0; white-space: pre; font: 400 12px/1.2 var(--mono); color: var(--c); }
+.st-ghost { color: rgba(255, 255, 255, 0.2); }
+.st-legend, .st-toast-epic .st-one .st-art {
+  background: linear-gradient(100deg, var(--c) 0 38%, #fff6d6 50%, var(--c) 62% 100%) 100% 0 / 260% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: st-shimmer 3.6s ease-in-out infinite;
+}
+@keyframes st-shimmer { 65%, 100% { background-position: 0 0; } }
+.st-name { font-size: 15px; font-weight: 600; }
+.st-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+/* small tier text a little lighter so it reads over bright day scenes */
+.st-tier { font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: color-mix(in srgb, var(--c) 72%, #fff); }
+.st-pts { font-size: 12.5px; color: rgba(255, 255, 255, 0.75); font-variant-numeric: tabular-nums; }
+.st-new { padding: 2px 6px 1px; border-radius: 999px; background: #F2CC6B; color: #2b2208; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; line-height: 14px; }
+.st-x { font: 500 12px var(--mono); color: rgba(255, 255, 255, 0.6); }
+.st-fact { margin: 0; font-size: 13px; line-height: 1.5; color: rgba(255, 255, 255, 0.72); }
+.st-fish { display: flex; align-items: center; gap: 14px; }
+.st-fish-text { min-width: 0; }
+
+/* catch toast, top center between the timer card and the moon */
+.st-toasts { position: fixed; top: 36px; left: 50%; z-index: 12; transform: translateX(-50%); pointer-events: none; width: max-content; max-width: calc(100vw - 32px); }
+.st-toast {
+  position: relative; padding: 14px 20px 14px 18px; border-radius: 16px; background: rgba(20, 20, 20, 0.72);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 10px 32px rgba(0, 0, 0, 0.22);
+  transition: opacity 450ms var(--ease), transform 450ms var(--ease);
+}
+/* the rarer the catch the more presence, common and uncommon stay calm */
+.st-toast-rare {
+  background: radial-gradient(90% 150% at 0% 50%, color-mix(in srgb, var(--c) 13%, transparent), transparent 70%), rgba(20, 20, 20, 0.72);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 30%, transparent), 0 10px 32px rgba(0, 0, 0, 0.22);
+}
+:is(.st-toast-epic, .st-toast-legendary) {
+  padding: 18px 26px 18px 22px; border-radius: 18px;
+  background: radial-gradient(90% 150% at 0% 50%, color-mix(in srgb, var(--c) 24%, transparent), transparent 75%), rgba(20, 20, 20, 0.76);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 42%, transparent), 0 0 48px -6px color-mix(in srgb, var(--c) 50%, transparent), 0 10px 32px rgba(0, 0, 0, 0.22);
+}
+/* one soft bloom of tier light as it lands */
+:is(.st-toast-epic, .st-toast-legendary)::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0;
+  background: radial-gradient(70% 130% at 14% 50%, color-mix(in srgb, var(--c) 34%, transparent), transparent 72%);
+  animation: st-bloom 2.6s ease-out 120ms;
+}
+@keyframes st-bloom { 30% { opacity: 1; } }
+:is(.st-toast-epic, .st-toast-legendary) .st-one { gap: 20px; }
+:is(.st-toast-epic, .st-toast-legendary) .st-one .st-art { font-size: 19px; }
+:is(.st-toast-epic, .st-toast-legendary) .st-one .st-name { font-size: 20px; }
+@starting-style { .st-toast { opacity: 0; transform: translateY(-12px) scale(0.97); } }
+.st-toast.out { opacity: 0; transform: translateY(-6px); transition-duration: 300ms; transition-timing-function: ease; }
+.st-one .st-art { font-size: 15px; }
+.st-one .st-name { font-size: 17px; }
+.st-toast-head { display: flex; justify-content: space-between; gap: 24px; margin-bottom: 10px; font-size: 14px; font-weight: 600; }
+.st-toast-list { display: flex; flex-direction: column; gap: 10px; }
+.st-small .st-art { width: 16ch; }
+.st-small .st-name { font-size: 14px; }
+.st-small .st-meta { margin-top: 2px; }
+.st-more { font-size: 12.5px; color: rgba(255, 255, 255, 0.6); }
+
+/* modal dialog for the journal and the summary */
+.st-dlg {
+  box-sizing: border-box; width: min(760px, calc(100vw - 48px)); max-height: min(680px, calc(100vh - 64px));
+  padding: 0; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; overflow: hidden;
+  background: rgba(24, 24, 26, 0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5); pointer-events: auto;
+  opacity: 1; transform: none;
+  transition: opacity 220ms var(--ease), transform 220ms var(--ease), overlay 220ms allow-discrete, display 220ms allow-discrete;
+}
+.st-dlg:focus { outline: none; }
+.st-dlg[open] { display: flex; flex-direction: column; }
+.st-dlg:not([open]) { opacity: 0; transform: scale(0.98); transition-duration: 150ms; }
+@starting-style { .st-dlg[open] { opacity: 0; transform: translateY(8px) scale(0.98); } }
+.st-dlg::backdrop { background: rgba(8, 10, 12, 0.5); transition: opacity 220ms ease, overlay 220ms allow-discrete, display 220ms allow-discrete; }
+.st-dlg:not([open])::backdrop { opacity: 0; }
+@starting-style { .st-dlg[open]::backdrop { opacity: 0; } }
+.st-jr { display: flex; flex-direction: column; height: min(640px, calc(100vh - 66px)); }
+.st-head { display: flex; align-items: flex-start; gap: 16px; padding: 22px 18px 0 26px; }
+.st-head h2 { margin: 0; font-size: 20px; font-weight: 600; }
+.st-sub { margin: 4px 0 0; font-size: 13px; color: rgba(255, 255, 255, 0.62); }
+.st-x-btn { display: grid; place-items: center; width: 36px; height: 36px; margin-left: auto; border-radius: 50%; color: rgba(255, 255, 255, 0.75); }
+.st-x-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
+.st-tabs { display: flex; gap: 4px; padding: 16px 22px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.st-tab { height: 32px; padding: 0 14px; border-radius: 999px; font-size: 13px; font-weight: 500; color: rgba(255, 255, 255, 0.6); }
+.st-tab:hover { color: #fff; }
+.st-tab[aria-selected="true"] { color: #fff; background: rgba(255, 255, 255, 0.12); }
+.st-pane { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 10px 14px 22px; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.22) transparent; }
+.st-pane:focus-visible { outline-offset: -2px; border-radius: 0 0 20px 20px; }
+
+/* this session list */
+.st-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.st-row { display: flex; align-items: center; gap: 14px; width: 100%; padding: 10px 12px; border-radius: 12px; text-align: left; }
+.st-row:hover { background: rgba(255, 255, 255, 0.06); }
+.st-rows li { border-radius: 12px; }
+.st-rows li:has(> [aria-expanded="true"]) { background: rgba(255, 255, 255, 0.07); }
+.st-row[aria-expanded="true"]:hover { background: none; }
+.st-row:active { transform: scale(0.99); }
+.st-row .st-art { width: 16ch; }
+.st-row .st-fish-text { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.st-time { width: 7ch; text-align: right; font: 400 12px var(--mono); color: rgba(255, 255, 255, 0.4); }
+/* lines up with the fish name */
+.st-row-fact { padding: 4px 12px 10px 141px; }
+
+/* journal grid by tier */
+.st-group h3 { display: flex; align-items: baseline; gap: 8px; margin: 16px 8px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c); }
+.st-group h3 span { font: 500 11px var(--mono); letter-spacing: 0; color: rgba(255, 255, 255, 0.45); }
+.st-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.st-entry { display: flex; flex-direction: column; gap: 8px; padding: 14px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.06); }
+.st-entry .st-art { min-height: 3.6em; display: flex; align-items: center; }
+.st-entry-legend { border-color: color-mix(in srgb, var(--c) 35%, transparent); }
+.st-entry-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.st-entry .st-name { font-size: 14px; }
+.st-entry .st-fact { font-size: 12.5px; line-height: 1.45; }
+.st-locked { background: transparent; border-style: dashed; border-color: rgba(255, 255, 255, 0.12); }
+.st-locked .st-name { color: rgba(255, 255, 255, 0.4); letter-spacing: 0.1em; }
+.st-locked .st-tier { opacity: 0.7; }
+
+/* summary */
+.st-dlg-sum { width: min(560px, calc(100vw - 48px)); max-height: calc(100vh - 48px); }
+.st-sum { display: flex; flex-direction: column; gap: 16px; padding: 24px 26px 20px; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.22) transparent; }
+.st-sum h2 { margin: 0; font-size: 20px; font-weight: 600; }
+.st-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.st-stat { display: flex; flex-direction: column; gap: 4px; padding: 11px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.06); }
+.st-stat b { font: 500 20px/1.1 var(--mono); font-variant-numeric: tabular-nums; }
+.st-stat span { font-size: 11px; color: rgba(255, 255, 255, 0.55); }
+.st-best, .st-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 18px 20px; border-radius: 16px; text-align: center; background: rgba(255, 255, 255, 0.04); }
+.st-best { background: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--c) 16%, transparent), rgba(255, 255, 255, 0.03)); border: 1px solid color-mix(in srgb, var(--c) 22%, transparent); }
+.st-best .st-cap { margin-bottom: 6px; }
+.st-best .st-art { font-size: 18px; margin-bottom: 6px; }
+.st-best .st-name { font-size: 20px; }
+.st-best .st-meta { justify-content: center; }
+.st-best .st-fact { margin-top: 8px; max-width: 34ch; }
+.st-empty .st-art { --c: #7FA8C9; font-size: 16px; margin-bottom: 6px; opacity: 0.8; }
+.st-sum > .st-cap { margin: 4px 2px -6px; }
+.st-species { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
+.st-species li { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 7px 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); }
+.st-species .st-glyph { flex: none; margin: 0; color: var(--c); }
+/* long names wrap so the count and new badge always fit */
+.st-species .st-name { flex: 1; min-width: 0; font-size: 13.5px; line-height: 1.3; }
+.st-dlg-actions { flex: none; display: flex; justify-content: flex-end; gap: 8px; padding: 14px 26px 20px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.st-dlg-actions .st-btn { height: 36px; padding: 0 18px; font-size: 13.5px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .st-legend, .st-toast-epic .st-one .st-art { animation: none; background-position: 50% 0; }
+  .st-pills, .st-card, .st-actions, .st-toast, .st-dlg, .st-dlg::backdrop, :is(.st-pills, .st-card, .st-dlg) button { transition-property: opacity !important; }
+}
