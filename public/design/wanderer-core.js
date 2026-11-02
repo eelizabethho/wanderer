@@ -205,7 +205,7 @@ function renderFrame(cv,st,E,dpr){const C=E.C,cw=E.cw,ctx=fit(cv,W,H,dpr),N=ROWS
  if(st.card){const x0=Math.floor((W-16-272)/cw)-1;for(let y=1;y<=8;y++)for(let x=x0;x<C;x++)g.co[y*C+x]=-1;}
  const sets=[setCols(st.a,0,st.tod),setCols(st.a,1,st.tod)];if(st.b)sets.push(setCols(st.b,0,st.tod),setCols(st.b,1,st.tod));
  paintGrid(ctx,g,nm,isB,sets,C,cw);
- const b=BM[pipId],a=SPR[b.act],f=Math.floor(st.t*a.fps)%4,px=Math.round(W*(st.pipX??.36)),py=b.ground*LH+10-(a.anchor+1)*st.S,sd=st.b&&pipId===st.b?(st.seedB||0):(st.seed||0);if(b.act!=='swim'){ctx.fillStyle=n>.5?'rgba(0,0,0,.4)':'rgba(70,45,25,.2)';ctx.beginPath();ctx.ellipse(px+a.w*st.S*.55,b.ground*LH+8,a.w*st.S*.55,6,0,0,6.283);ctx.fill();}
+ const b=BM[pipId],a=SPR[b.act],f=Math.floor(st.t*a.fps)%4,px=Math.round(W*(st.pipX??.36)),py=b.ground*LH+10-(a.anchor+1)*st.S,sd=st.b&&pipId===st.b?(st.seedB||0):(st.seed||0);if(b.act!=='swim'){ctx.fillStyle=n>.5?'rgba(0,0,0,.4)':'rgba(70,45,25,.2)';ctx.beginPath();ctx.ellipse(px+(a.sw||a.w)*st.S*.55,b.ground*LH+8,(a.sw||a.w)*st.S*.55,6,0,0,6.283);ctx.fill();}
  drawSprite(ctx,a.frames[f],px,py,st.S);if(st.props!==false&&WE.pickProps)drawProps(ctx,b.act,f,px,py,st.S,WE.pickProps(b.id,b.act,sd,n>.5),n>.5);}
 function gridText(fn,C,R0,R1){const g={ch:new Uint8Array(ROWS*C),co:new Int8Array(ROWS*C).fill(-1),C};fn(g);const out=[];for(let y=R0;y<=R1;y++){let s='';for(let x=0;x<C;x++){const c=g.ch[y*C+x];s+=c?String.fromCharCode(c):' ';}out.push(s.replace(/\s+$/,''));}return out.join('\n');}
 

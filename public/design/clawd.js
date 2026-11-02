@@ -4,7 +4,7 @@
 // Clawd stands about as tall as Wick did.
 (function () {
   const WE = window.WE;
-  Object.assign(WE.PIP_C, { c: '#DE886D', x: '#B8664E', k: '#000000' }); // body, far legs, eyes
+  Object.assign(WE.PIP_C, { c: '#DE886D', x: '#B8664E', k: '#000000', R: '#8A6A4E' }); // body, far legs, eyes, fishing rod
 
   const BODY = [
     '..ccccccccccc..',
@@ -30,6 +30,11 @@
   const body = (g, ox, oy) => BODY.forEach((r, j) => [...r].forEach((c, i) => c !== '.' && rect(g, ox + i * 2, oy + j * 2, 2, 2, c)));
   const legs = (g, ox, oy, xs, dx, len, c) => xs.forEach((lx) => rect(g, ox + lx * 2 + dx, oy + BH, 2, len, c));
   const rows = (g) => g.map((r) => r.join(''));
+  // rowboat hull with its rim at row y + 14 and the bow raised on the right
+  const hull = (g, y) => {
+    rect(g, 0, y + 13, 1, 1, 'w'); rect(g, 33, y + 13, 1, 1, 'w'); rect(g, 34, y + 12, 1, 2, 'w');
+    rect(g, 0, y + 14, 35, 1, 'w'); rect(g, 1, y + 15, 33, 1, 'W'); rect(g, 2, y + 16, 31, 1, 'd'); rect(g, 3, y + 17, 29, 1, 'W'); rect(g, 5, y + 18, 25, 1, 'd');
+  };
 
   // Walk: legs alternate, lifted pair is shorter; body bobs 1px on the passing frames.
   const walk = [[-1, 1, 4, 4, 0], [0, 0, 2, 4, 1], [1, -1, 4, 4, 0], [0, 0, 4, 2, 1]].map(([dn, df, ln, lf, bob]) => {
@@ -45,8 +50,7 @@
   const boat = OAR.map(([bx, by], f) => {
     const g = grid(35, 20), ox = 2, oy = 1 + (f % 2);
     body(g, ox, oy);
-    rect(g, 0, 13, 1, 1, 'w'); rect(g, 33, 13, 1, 1, 'w'); rect(g, 34, 12, 1, 2, 'w');
-    rect(g, 0, 14, 35, 1, 'w'); rect(g, 1, 15, 33, 1, 'W'); rect(g, 2, 16, 31, 1, 'd'); rect(g, 3, 17, 29, 1, 'W'); rect(g, 5, 18, 25, 1, 'd');
+    hull(g, 0);
     const hx = ox + ARM.x + 2, hy = oy + ARM.y + 2;
     line(g, hx, hy, bx, by, 'd');
     rect(g, bx - 1, by - 2, 2, 3, 'w');
@@ -85,11 +89,28 @@
     return rows(g);
   });
 
+  // fish pose with clawd in the boat hull 4 rows lower to fit the rod held out over the water
+  // body bobs 1px and the rod tip lags a frame behind and TIP is where wanderer-fishing.js ties the line
+  const BOB = [0, 1, 1, 0], TIP = [[47, 0], [47, 0], [47, 1], [46, 1]];
+  const fish = TIP.map(([tx, ty], f) => {
+    const g = grid(48, 24), ox = 2, oy = 5 + BOB[f], hx = ox + ARM.x + 4, hy = oy + ARM.y + 2;
+    body(g, ox, oy);
+    line(g, hx - 4, hy + 3, hx, hy, 'd'); // grip
+    line(g, hx, hy, tx, ty, 'R');
+    rect(g, hx - 2, hy + 2, 2, 2, 'M'); // reel
+    rect(g, hx - 1, hy - 1, 2, 2, 'c'); // paw on the rod
+    hull(g, 4);
+    return rows(g);
+  });
+
   const S = WE.SPR;
   Object.assign(S.walk, { w: 32, h: 18, anchor: 17, frames: walk, off: [[1, 0], [1, 1], [1, 0], [1, 1]] });
   Object.assign(S.boat, { w: 35, h: 20, anchor: 16, frames: boat, off: [[2, 1], [2, 2], [2, 1], [2, 2]] });
   Object.assign(S.bike, { w: 35, h: 25, anchor: 24, frames: bike, off: [[3, 1], [3, 2], [3, 1], [3, 2]] });
   Object.assign(S.swim, { w: 33, h: 22, anchor: 21, frames: swim, off: [[2, 4], [2, 5], [2, 5], [2, 4]] });
+  S.fish = { name: 'Fishing', w: 48, sw: 35, h: 24, fps: 3, anchor: 20, frames: fish, off: BOB.map((b) => [2, 5 + b]), tip: TIP };
+  WE.SLOTS.fish = ['head'];
+  WE.ACT.fish = 'Clawd fishes';
 
   // Props: hats centred on the head with one row of overlap, hand props held at the right arm, backpack on the left.
   for (const p of Object.values(WE.PROPS)) {
