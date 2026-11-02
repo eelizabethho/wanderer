@@ -124,7 +124,7 @@ export function mountStudy(
     }, toastMs);
   };
   document.addEventListener('visibilitychange', armToast);
-  const showToast = (items: Hit[]) => {
+  const showToast = (items: Hit[], when = 'while you were away') => {
     if (!items.length) return;
     // rarest first so a legendary never hides in and n more
     items.sort((a, b) => rank(b[0]) - rank(a[0]));
@@ -134,7 +134,7 @@ export function mountStudy(
       t.append(fishLine(best, items[0][1], 'st-one'));
     } else {
       const head = el('div', 'st-toast-head');
-      head.append(el('span', '', `+${items.length} fish while you were away`), el('span', 'st-pts', `+${items.reduce((a, [f]) => a + pts(f), 0)} pts`));
+      head.append(el('span', '', `+${items.length} fish ${when}`), el('span', 'st-pts', `+${items.reduce((a, [f]) => a + pts(f), 0)} pts`));
       const list = el('div', 'st-toast-list');
       list.append(...items.slice(0, 5).map(([f, isNew]) => fishLine(f, isNew, 'st-small')));
       if (items.length > 5) list.append(el('div', 'st-more', `and ${items.length - 5} more`));
@@ -161,11 +161,14 @@ export function mountStudy(
     focus.focus({ preventScroll: true });
   };
   dlg.addEventListener('close', () => {
-    // the opener can be gone, like stop once the session ends
-    const opener = back && back !== document.body && back.checkVisibility() ? back : null;
-    (opener ?? $(card.hidden ? '.st-start' : '.st-fishbtn')).focus();
+    // opened by a shortcut key so focus stays on the page and the idle card can dim
+    if (back !== document.body) {
+      // the opener can be gone, like stop once the session ends
+      const opener = back?.checkVisibility() ? back : null;
+      (opener ?? $(card.hidden ? '.st-start' : '.st-fishbtn')).focus();
+    }
     back = null;
-    showToast(waiting.splice(0));
+    showToast(waiting.splice(0), 'caught');
   });
   // a click on the dimmed backdrop lands on the dialog itself
   dlg.addEventListener('click', (e) => e.target === dlg && dlg.close());

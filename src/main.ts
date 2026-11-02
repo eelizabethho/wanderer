@@ -146,7 +146,9 @@ const setPaused = (paused: boolean) => {
   if (session) update(paused ? pause(session, Date.now(), speed) : resume(session, Date.now()));
 };
 const setAct = (act: 'fish' | 'boat') => STUDY_ORDER.forEach((id) => (WE.BM[id].act = act));
-const openJournal = () => ui.openJournal(journal, session?.catches ?? []);
+// the summary's open journal still shows the session that just ended
+let ended: Session | null = null;
+const openJournal = () => ui.openJournal(journal, (session ?? ended)?.catches ?? []);
 
 // head for the lake unless already at a fishing spot
 function enterStudy() {
@@ -168,6 +170,7 @@ function stop() {
   saveJournal(store, journal);
   saveSession(store, null);
   session = null;
+  ended = done;
   reel = nextReel = null;
   setAct('boat');
   biomeStart = performance.now();
