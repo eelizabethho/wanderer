@@ -1,6 +1,6 @@
 # Wanderer
 
-An ambient ASCII world to study to. Clawd the crab travels through six biomes (forest, rolling hills, town, lake, under the sea, a mountain dome) under a sky that follows your real clock, while the song playing in your Spotify app shows in a TV-style player.
+An ambient ASCII world to study to. Clawd the crab travels through nine biomes (forest, rolling hills, town, lake, under the sea, a mountain dome, a snowy tundra, a desert, a canyon river) under a sky that follows your real clock, while the song playing in your Spotify app shows in a TV-style player.
 
 ![Clawd wandering through the forest, hills, town and lake while a Spotify song plays in the TV player](docs/demo.gif)
 
@@ -43,7 +43,7 @@ Add these to the URL:
 
 ## How it works
 
-- **Scenes**: `public/design/` holds the scene engine from the Wanderer v2 design. The only changes are a `pipX` option for the character's position and `clawd.js`, which swaps in Clawd and re-anchors the props.
+- **Scenes**: `public/design/` holds the scene engine from the Wanderer v2 design. On top of the design, the engine lights the terrain from the upper left (shadowed slopes and valleys get denser ink by day, moonlit slopes glow at night) and adds a moon halo and Clawd's ground shadow. `wanderer-biomes-more.js` adds the tundra, desert and canyon, `wanderer-fauna.js` adds animals to the original six biomes, and `clawd.js` swaps in Clawd and re-anchors the props.
 - **Spotify**: `bridge/server.mjs` reads the desktop app through AppleScript, so it needs no login, works on Spotify Free, and only sees music playing on this Mac. Nothing is sent anywhere.
 - **App**: `src/` runs the biome timer, keyboard controls and the player.
 

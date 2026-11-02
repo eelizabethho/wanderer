@@ -55,15 +55,30 @@ function wx2sx(wx,off){let s=((wx-off)%P+P)%P;if(s>P-30)s-=P;return s;}
 
 // ---------- layer builders ----------
 function pn(seed,k0,k1,fall){const r=rng(seed),h=[];let s=0;for(let k=k0;k<=k1;k++){const a=(0.4+r())/Math.pow(k,fall);h.push([k,r()*6.283,a]);s+=a;}return x=>{let v=0;for(const[k,p,a]of h)v+=a*Math.sin(6.2832*k*x/P+p);return v/s*1.6;};}
-function lay(o){return Object.assign({ch:new Uint8Array(ROWS*P),co:new Uint8Array(ROWS*P),top:new Int16Array(P).fill(999),bot:new Int16Array(P).fill(-1),mask:false,speed:0},o);}
-function put(l,y,x,c,ci){if(y<0||y>=ROWS)return;x=((x%P)+P)%P;const i=y*P+x;l.ch[i]=c.charCodeAt(0);l.co[i]=ci;}
-function fillCol(l,x,t,b,o,r){l.top[x]=t;l.bot[x]=b;for(let y=Math.max(t+1,0);y<=Math.min(b,ROWS-1);y++){
- if(o.snow&&y-t<=o.snow.rows){if(r()<o.snow.dens)put(l,y,x,pick(r,o.snow.chars),o.snow.ci);continue;}
- let d=o.dens*(1-(o.fade||0)*(y-t)/Math.max(1,b-t));if(o.streak)d*=(y%2?1:.45);if(r()<d)put(l,y,x,pick(r,o.chars),o.ci);}}
+function lay(o){return Object.assign({ch:new Uint8Array(ROWS*P),co:new Uint8Array(ROWS*P),cn:new Uint8Array(ROWS*P),on:new Uint8Array(ROWS*P),top:new Int16Array(P).fill(999),bot:new Int16Array(P).fill(-1),mask:false,speed:0},o);}
+function put(l,y,x,c,ci,night){if(y<0||y>=ROWS)return;x=((x%P)+P)%P;const i=y*P+x,k=c?c.charCodeAt(0):0;if(night!==1){l.ch[i]=k;l.co[i]=ci;}if(night!==0){l.cn[i]=k;l.on[i]=ci;}}
+// ---------- lighting ----------
+// Light comes from the upper left: '/' faces are lit, '\' faces and valleys in the lee of peaks fall into shadow.
+// shader(T) returns sh(x,d) = 0 (lit) … 1 (deep shadow) for a cell d rows under the top edge of world column x.
+const INK=".'`,_-:;~^\"/\\|)(=+<>xo*O%X#&@";
+const rank=s=>[...new Set(s)].sort((a,b)=>INK.indexOf(a)-INK.indexOf(b)).join('');
+function vn(x,y,per){const xi=Math.floor(x),yi=Math.floor(y),fx=x-xi,fy=y-yi,u=fx*fx*(3-2*fx),v=fy*fy*(3-2*fy),w=i=>((i%per)+per)%per;
+ const a=hh(w(xi),yi),b=hh(w(xi+1),yi),c=hh(w(xi),yi+1),d=hh(w(xi+1),yi+1);return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v;}
+function shader(T,seed){const cast=new Float32Array(P),ao=new Float32Array(P),at=x=>T[((x%P)+P)%P];
+ let R=T[0];for(let i=0;i<2*P;i++){const x=i%P;R=Math.min(R+.3,T[x]);if(i>=P)cast[x]=clamp((T[x]-R)/4);}
+ for(let x=0;x<P;x++){let s=0;for(let k=-8;k<=8;k++)s+=at(x+k);ao[x]=clamp((T[x]-s/17)/5,-1,1);}
+ return (x,d)=>{const w=1+(d*.6|0),xs=x-Math.round(d*.3),s=clamp((at(xs+w)-at(xs-w))/(2*w),-1.2,1.2);
+  return clamp(.45+s*.65+cast[x]*.5*Math.max(0,1-d/14)+ao[x]*.3+(vn(x/8,d/4+seed,P/8)-.5)*.4);};}
+function fillCol(l,x,t,b,o,r,sh){l.top[x]=t;l.bot[x]=b;const R=o.ramp||(o.ramp=rank(o.chars));for(let y=Math.max(t+1,0);y<=Math.min(b,ROWS-1);y++){const d=y-t;
+ if(o.snow&&d<=o.snow.rows){if(r()<o.snow.dens)put(l,y,x,pick(r,o.snow.chars),o.snow.ci);continue;}
+ let p=o.dens*(1-(o.fade||0)*d/Math.max(1,b-t));if(o.streak)p*=(y%2?1:.45);const u=r(),j=(r()-.5)*.3;
+ if(!sh){if(u<p)put(l,y,x,pick(r,o.chars),o.ci);continue;}
+ const a=sh(x,d);[a,1-a*.85].forEach((v,night)=>put(l,y,x,u<Math.min(1,p*1.4)*(.3+1.2*v)?R[clamp(Math.floor((v+j)*R.length),0,R.length-1)]:'',clamp(o.ci+(v<.25?-1:v<.6?0:v<.85?1:2),Math.min(o.ci,1),4),night));}}
 function reflect(l,T,o){const r=rng(o.seed);for(let x=0;x<P;x++)for(let y=Math.max(0,T[x]);y<o.line;y++){const d=o.line-y,my=o.line+d-1,p=o.dens*(1-d/o.maxD);if(p>0&&r()<p)put(l,my,x+Math.round(Math.sin(my*1.3+x*.05)*1.2),pick(r,o.chars),o.ci);}}
 function ridge(o){const l=lay({mask:true,speed:o.speed});const k=o.k||[1,6];const n=pn(o.seed,k[0],k[1],o.fall??1);const r=rng(o.seed+5);const T=[];
  for(let x=0;x<P;x++)T[x]=Math.round(o.topFn?o.topFn(x,n):o.base-n(x)*o.amp);
- for(let x=0;x<P;x++){const t=T[x];fillCol(l,x,t,o.bottom,o,r);const a=T[(x+P-1)%P],b=T[(x+1)%P];
+ const sh=o.flat?null:shader(T,o.seed);
+ for(let x=0;x<P;x++){const t=T[x];fillCol(l,x,t,o.bottom,o,r,sh);const a=T[(x+P-1)%P],b=T[(x+1)%P];
   const e=o.flat?pick(r,o.flat):(a>t&&b>t)?'^':b<t?'/':a<t?'\\':pick(r,'-_');put(l,t,x,e,o.edgeCi??o.ci);}
  if(o.reflect)reflect(l,T,o.reflect);
  if(o.path)for(let x=0;x<P;x++){const y=T[x]+2+Math.round((Math.sin(6.2832*3*x/P)+1)*o.path.amp);if(y<o.bottom)put(l,y,x,'=',o.path.ci);}
@@ -76,24 +91,27 @@ function ridge(o){const l=lay({mask:true,speed:o.speed});const k=o.k||[1,6];cons
 function pines(o){const l=lay({mask:true,speed:o.speed});const n=pn(o.seed,2,9,1),r=rng(o.seed+3);const B=[],T=[],S=new Int8Array(P);l.apex=[];
  for(let x=0;x<P;x++){B[x]=Math.round(o.base-n(x)*o.amp);T[x]=B[x];}
  let x=(r()*o.gap[1])|0;while(x<P){const h=o.h[0]+((r()*(o.h[1]-o.h[0]+1))|0),ap=B[x]-h,hw=Math.ceil(h/o.slope);l.apex.push({x,y:ap});
-  for(let dx=-hw;dx<=hw;dx++){const xx=((x+dx)%P+P)%P,t=ap+Math.round(Math.abs(dx)*o.slope);if(t<T[xx]){T[xx]=t;S[xx]=dx<0?1:dx>0?2:3;}}
+  const wd=j=>j/o.slope*(.7+.5*(j%4)/4);
+  for(let dx=-hw;dx<=hw;dx++){const xx=((x+dx)%P+P)%P;let j=0;while(j<h&&wd(j)<Math.abs(dx))j++;const t=ap+j;if(t<T[xx]){T[xx]=t;S[xx]=dx<0?1:dx>0?2:3;}}
   x+=o.gap[0]+((r()*(o.gap[1]-o.gap[0]+1))|0);}
- for(let x=0;x<P;x++){fillCol(l,x,T[x],o.bottom,o,r);put(l,T[x],x,S[x]===1?'/':S[x]===2?'\\':S[x]===3?'^':pick(r,o.chars),o.edgeCi??o.ci);}
+ const sh=shader(T,o.seed);
+ for(let x=0;x<P;x++){fillCol(l,x,T[x],o.bottom,o,r,sh);put(l,T[x],x,S[x]===1?'/':S[x]===2?'\\':S[x]===3?'^':pick(r,o.chars),o.edgeCi??o.ci);}
  if(o.reflect)reflect(l,T,o.reflect);l.T=T;return l;}
 function scatter(o){const l=lay({speed:o.speed});const r=rng(o.seed);for(let y=o.rows[0];y<=o.rows[1]&&y<ROWS;y++){const f=1+(o.grad||0)*(y-o.rows[0])/Math.max(1,o.rows[1]-o.rows[0]);
- for(let x=0;x<P;x++){if(r()<o.dens*f)put(l,y,x,pick(r,o.chars),o.ci);else if(o.acc&&r()<o.acc.dens)put(l,y,x,pick(r,o.acc.chars),o.acc.ci);}}return l;}
+ for(let x=0;x<P;x++){if(r()<o.dens*f*(.2+1.8*vn(x/6,y/2+o.seed,P/6)))put(l,y,x,pick(r,o.chars),o.ci);else if(o.acc&&r()<o.acc.dens)put(l,y,x,pick(r,o.acc.chars),o.acc.ci);}}return l;}
 function houses(o){const l=lay({mask:true,speed:o.speed});const r=rng(o.seed);l.wins=[];l.chims=[];l.apex=[];
  const setTop=(xx,y)=>{const k=((xx%P)+P)%P;if(y<l.top[k])l.top[k]=y;l.bot[k]=o.ground-1;};
  let x=2+((r()*4)|0);
  for(;;){let w=o.w[0]+((r()*(o.w[1]-o.w[0]+1))|0);if(w%2)w++;if(x+w+2>=P)break;
   let h=o.h[0]+((r()*(o.h[1]-o.h[0]+1))|0);const tower=o.tower&&r()<o.tower;if(tower)h+=5;
   const gb=o.ground,wt=gb-h;
-  for(let y=wt;y<gb;y++)for(let i=0;i<w;i++){const xx=x+i;setTop(xx,y);if(i===0||i===w-1)put(l,y,xx,'|',o.ci);else if(r()<o.tex)put(l,y,xx,pick(r,'.:'),o.fillCi);}
+  for(let y=wt;y<gb;y++)for(let i=0;i<w;i++){const xx=x+i;setTop(xx,y);if(i===0||i===w-1)put(l,y,xx,'|',o.ci);else{const a=clamp(i/w*.85+(y===wt?.6:0)+(r()-.5)*.25),u=r(),c=pick(r,'.:');
+   put(l,y,xx,u<o.tex+a*a*.6?(a>.62?pick(r,':;=/'):c):'',a>.62?o.ci:o.fillCi,0);put(l,y,xx,u<o.tex?c:'',o.fillCi,1);}}
   for(let y=wt+1;y<gb-2;y+=o.detail?3:2)for(let i=2;i+1<w-1;i+=o.detail?5:3){if(o.detail){put(l,y,x+i,'[',o.ci);put(l,y,x+i+1,']',o.ci);l.wins.push({x:x+i,y,s:'[]'});}else{put(l,y,x+i,'.',o.ci);l.wins.push({x:x+i,y,s:'.'});}}
   if(o.detail){const dx=x+Math.floor(w/2)-1;put(l,gb-3,dx+1,'_',o.ci);put(l,gb-2,dx,'|',o.ci);put(l,gb-1,dx,'|',o.ci);put(l,gb-2,dx+2,'|',o.ci);put(l,gb-1,dx+2,'|',o.ci);}
   const sl=tower?1:2;let j=0;
   for(;;j++){const x0=x-1+j*sl,x1=x+w-j*sl,y=wt-1-j;if(x1-x0<1)break;setTop(x0,y);setTop(x1,y);put(l,y,x0,'/',o.ci);put(l,y,x1,'\\',o.ci);
-   for(let xx=x0+1;xx<x1;xx++){setTop(xx,y);if(r()<o.roofDens)put(l,y,xx,j%2?'=':'-',o.roofCi);}if(x1-x0<=1)break;}
+   for(let xx=x0+1;xx<x1;xx++){setTop(xx,y);const rs=2*xx>x0+x1;if(rs||r()<o.roofDens)put(l,y,xx,rs?'=':j%2?'=':'-',Math.min(4,o.roofCi+rs));}if(x1-x0<=1)break;}
   l.apex.push({x:x+Math.floor(w/2),y:wt-1-j});
   if(o.detail&&!tower&&r()<.7){const c=x+w-4;for(const[yy,s]of [[wt-5,'[]'],[wt-4,'||']]){put(l,yy,c-1,s[0],o.ci);put(l,yy,c,s[1],o.ci);setTop(c-1,yy);setTop(c,yy);}l.chims.push({x:c,y:wt-5});}
   x+=w+o.gap[0]+((r()*(o.gap[1]-o.gap[0]+1))|0);}
@@ -122,10 +140,13 @@ function drawSun(g,sx,sy,t,el){const rx=4.2,ry=2.2;for(let y=Math.floor(sy-ry);y
  const ph=Math.floor(t*1.2);for(let k=0;k<8;k++){const a=k*Math.PI/4,ch='-/|\\'[k%4];[1.75,2.3].forEach((s,j)=>{if(j&&(ph+k)%2)return;gp(g,Math.round(sx+Math.cos(a)*rx*s),Math.round(sy-Math.sin(a)*ry*s),ch,6);});}
  if(el<.4){const amt=1-Math.max(0,el)/.4;for(let r=0;r<4;r++){const y=Math.round(sy+ry+1+r),w=Math.round((10+r*7)*amt);for(let x=Math.round(sx-w);x<=Math.round(sx+w);x++)if(hh(x,y+Math.floor(t*.5))<.35*amt)gp(g,x,y,r%2?'-':'_',6);}}}
 function drawMoon(g,mx,my){const rx=3.8,ry=2;for(let y=Math.floor(my-ry);y<=Math.ceil(my+ry);y++)for(let x=Math.floor(mx-rx);x<=Math.ceil(mx+rx);x++){const d=((x-mx)/rx)**2+((y-my)/ry)**2;if(d>1)continue;gclr(g,x,y);if(((x-mx)/rx+1.25)**2+((y-my)/ry)**2<1)continue;gp(g,x,y,hh(x,y)>.82?'o':d>.5?'O':'@',7);}}
+const BAYER=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5].map(v=>(v+.5)/16);
+function halo(g,x0,y0,R,hz,ci,co,k){for(let y=Math.max(0,Math.floor(y0-R));y<hz;y++)for(let x=Math.floor(x0-R*2);x<=x0+R*2;x++){if(x<0||x>=g.C||g.ch[y*g.C+x])continue;
+ const e=Math.hypot((x-x0)/2,y-y0)/R;if(e<.3||e>1)continue;const I=k*Math.pow(1-e,.7)*(.75+.25*Math.sin(e*30))*(y%2?1:.4);if(I>BAYER[(y&3)*4+(x&3)])gp(g,x,y,I>.6?'=':I>.35?'-':'.',I>.45?ci:co);}}
 function drawSky(g,cx){const{t,tod,C,b}=cx,hz=b.hz;
- for(let i=0;i<110;i++){const x=Math.floor(hh(i,1)*C),y=Math.floor(hh(i,2)*hh(i,5)*hz);if(!isN(cx,x,y))continue;gp(g,x,y,hh(i,Math.floor(t*.7+i*3))>.85?'+':hh(i,3)>.9?'*':'.',hh(i,4)>.8?4:2);}
+ for(let i=0;i<260;i++){const x=Math.floor(hh(i,1)*C),y=Math.floor(hh(i,2)*hh(i,5)*hz);if(!isN(cx,x,y))continue;gp(g,x,y,hh(i,Math.floor(t*.7+i*3))>.85?'+':hh(i,3)>.9?'*':'.',hh(i,4)>.8?4:2);}
  if(tod>5&&tod<19){const th=Math.PI*(tod-6)/12,sx=C*(.08+.84*th/Math.PI),sy=hz-Math.sin(th)*(hz-7);cx.sun={x:sx,y:sy};drawSun(g,sx,sy,t,Math.sin(th));}
- const mt=(tod+6)%24;if(mt<12.8){const th=Math.PI*(mt-.4)/12,mx=C*(.1+.8*th/Math.PI),my=hz-Math.sin(th)*(hz-6);cx.moon={x:mx,y:my};drawMoon(g,mx,my);}
+ const mt=(tod+6)%24;if(mt<12.8){const th=Math.PI*(mt-.4)/12,mx=C*(.1+.8*th/Math.PI),my=hz-Math.sin(th)*(hz-6);cx.moon={x:mx,y:my};halo(g,mx,my,15,hz,4,2,.9);drawMoon(g,mx,my);}
  for(let i=0;i<7;i++){const span=C+60,x=Math.round(((hh(i,9)*span-t*(.18+hh(i,8)*.12))%span+span)%span)-30,y=3+Math.floor(hh(i,7)*(hz-14));stamp(g,x,y,CLOUDS[i%4],1,true);}
  if(b.birds)for(let f=0;f<2;f++){const span=C+80,x0=((hh(f,21)*span+t*(1.6+f*.5))%span)-40,y0=7+Math.floor(hh(f,22)*(hz-16));
   [[0,0],[-3,-1],[-3,1],[-6,-2],[-6,2]].forEach(([dx,dy],k)=>{const x=Math.round(x0+dx),y=Math.round(y0+dy+Math.sin(t*1.5+k)*.6),fl=(Math.floor(t*4)+k)%2,n=isN(cx,x,y);if(n&&b.birds!=='bats')return;gp(g,x,y,n?(fl?'^':'v'):(fl?'v':'-'),3);});}}
@@ -140,7 +161,7 @@ function composeB(b,st,nm,E){const C=E.C,N=ROWS*C,g={ch:new Uint8Array(N),co:new
  for(const l of E.L[b.id]){const off=Math.floor(st.t*l.speed)%P;
   for(let x=0;x<C;x++){const sx=(x+off)%P;
    if(l.mask&&l.bot[sx]>=0)for(let y=Math.max(0,l.top[sx]);y<=Math.min(ROWS-1,l.bot[sx]);y++){g.ch[y*C+x]=0;g.co[y*C+x]=-1;}
-   for(let y=0;y<ROWS;y++){const c=l.ch[y*P+sx];if(c){g.ch[y*C+x]=c;g.co[y*C+x]=l.co[y*P+sx];}}}
+   for(let y=0;y<ROWS;y++){const i=y*P+sx,n=nm[y*C+x],c=n?l.cn[i]:l.ch[i];if(c){g.ch[y*C+x]=c;g.co[y*C+x]=n?l.on[i]:l.co[i];}}}
   if(l.dyn)l.dyn(g,cx,off,l);}
  if(b.post)b.post(g,cx);return g;}
 let BUF=null;
@@ -184,7 +205,8 @@ function renderFrame(cv,st,E,dpr){const C=E.C,cw=E.cw,ctx=fit(cv,W,H,dpr),N=ROWS
  if(st.card){const x0=Math.floor((W-16-272)/cw)-1;for(let y=1;y<=8;y++)for(let x=x0;x<C;x++)g.co[y*C+x]=-1;}
  const sets=[setCols(st.a,0,st.tod),setCols(st.a,1,st.tod)];if(st.b)sets.push(setCols(st.b,0,st.tod),setCols(st.b,1,st.tod));
  paintGrid(ctx,g,nm,isB,sets,C,cw);
- const b=BM[pipId],a=SPR[b.act],f=Math.floor(st.t*a.fps)%4,px=Math.round(W*(st.pipX??.36)),py=b.ground*LH+10-(a.anchor+1)*st.S,sd=st.b&&pipId===st.b?(st.seedB||0):(st.seed||0);drawSprite(ctx,a.frames[f],px,py,st.S);if(st.props!==false&&WE.pickProps)drawProps(ctx,b.act,f,px,py,st.S,WE.pickProps(b.id,b.act,sd,n>.5),n>.5);}
+ const b=BM[pipId],a=SPR[b.act],f=Math.floor(st.t*a.fps)%4,px=Math.round(W*(st.pipX??.36)),py=b.ground*LH+10-(a.anchor+1)*st.S,sd=st.b&&pipId===st.b?(st.seedB||0):(st.seed||0);if(b.act!=='swim'){ctx.fillStyle=n>.5?'rgba(0,0,0,.4)':'rgba(70,45,25,.2)';ctx.beginPath();ctx.ellipse(px+a.w*st.S*.55,b.ground*LH+8,a.w*st.S*.55,6,0,0,6.283);ctx.fill();}
+ drawSprite(ctx,a.frames[f],px,py,st.S);if(st.props!==false&&WE.pickProps)drawProps(ctx,b.act,f,px,py,st.S,WE.pickProps(b.id,b.act,sd,n>.5),n>.5);}
 function gridText(fn,C,R0,R1){const g={ch:new Uint8Array(ROWS*C),co:new Int8Array(ROWS*C).fill(-1),C};fn(g);const out=[];for(let y=R0;y<=R1;y++){let s='';for(let x=0;x<C;x++){const c=g.ch[y*C+x];s+=c?String.fromCharCode(c):' ';}out.push(s.replace(/\s+$/,''));}return out.join('\n');}
 
 window.WE=Object.assign(window.WE||{},{LH,W,H,ROWS,P,FONT,clamp,mix,rng,hh,PIP_C,KEY,SPR,gp,gclr,stamp,isN,wx2sx,ridge,pines,scatter,houses,withDyn,nightFrac,golden,blue,setCols,cardFrom,fmt,phaseName,CLOUDS,drawSun,drawMoon,renderFrame,drawSprite,drawProps,PROPS,PROP_C,fit,ease,makeEngine,gridText});

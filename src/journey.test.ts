@@ -8,12 +8,14 @@ describe('journey', () => {
     for (let i = 1; i < ORDER.length; i++) seen.push((b = nextBiome(b)));
     expect(seen).toEqual([...ORDER]);
     expect(nextBiome(b)).toBe(ORDER[0]);
+    expect(ORDER).toEqual(expect.arrayContaining(['tundra', 'desert', 'canyon']));
   });
 
   it('dives into the sea and rises out of it', () => {
     expect(transitionFor('lake', 'sea')).toEqual({ mode: 'v', dir: 1 });
     expect(transitionFor('sea', 'peaks')).toEqual({ mode: 'v', dir: -1 });
     expect(transitionFor('forest', 'hills').mode).toBe('h');
+    expect(transitionFor('canyon', 'forest').mode).toBe('h');
   });
 
   it('reads the clock as fractional hours', () => {

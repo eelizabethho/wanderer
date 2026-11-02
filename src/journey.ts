@@ -1,6 +1,6 @@
 // Biome order and transition rules from the Wanderer v2 design (public/design/*).
 
-export const ORDER = ['forest', 'hills', 'town', 'lake', 'sea', 'peaks'] as const;
+export const ORDER = ['forest', 'hills', 'town', 'lake', 'sea', 'peaks', 'tundra', 'desert', 'canyon'] as const;
 export type Biome = (typeof ORDER)[number];
 
 export const nextBiome = (b: Biome): Biome => ORDER[(ORDER.indexOf(b) + 1) % ORDER.length];
