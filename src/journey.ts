@@ -3,7 +3,11 @@
 export const ORDER = ['forest', 'hills', 'town', 'lake', 'sea', 'peaks', 'tundra', 'desert', 'canyon'] as const;
 export type Biome = (typeof ORDER)[number];
 
-export const nextBiome = (b: Biome): Biome => ORDER[(ORDER.indexOf(b) + 1) % ORDER.length];
+// while studying the journey only visits the fishing spots
+export const STUDY_ORDER: readonly Biome[] = ['lake', 'canyon'];
+
+// a biome outside order starts it over
+export const nextBiome = (b: Biome, order: readonly Biome[] = ORDER): Biome => order[(order.indexOf(b) + 1) % order.length];
 
 /** Into or out of the sea scrolls vertically (dive down / rise up); everything else dissolves sideways. */
 export function transitionFor(from: Biome, to: Biome): { mode: 'h' | 'v'; dir: 1 | -1 } {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ORDER, clockHours, nextBiome, transitionFor, type Biome } from './journey';
+import { ORDER, STUDY_ORDER, clockHours, nextBiome, transitionFor, type Biome } from './journey';
 
 describe('journey', () => {
   it('visits every biome once and loops', () => {
@@ -9,6 +9,14 @@ describe('journey', () => {
     expect(seen).toEqual([...ORDER]);
     expect(nextBiome(b)).toBe(ORDER[0]);
     expect(ORDER).toEqual(expect.arrayContaining(['tundra', 'desert', 'canyon']));
+  });
+
+  it('cycles only the fishing spots while studying', () => {
+    expect(nextBiome('lake', STUDY_ORDER)).toBe('canyon');
+    expect(nextBiome('canyon', STUDY_ORDER)).toBe('lake');
+    for (const b of ORDER.filter((b) => !STUDY_ORDER.includes(b))) expect(nextBiome(b, STUDY_ORDER)).toBe('lake');
+    expect(nextBiome('lake')).toBe('sea');
+    expect(nextBiome('canyon')).toBe('forest');
   });
 
   it('dives into the sea and rises out of it', () => {
